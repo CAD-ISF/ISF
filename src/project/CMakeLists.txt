@@ -5,5 +5,5 @@ include_directories ( ${CMAKE_SOURCE_DIR} )
 project ( IFS )
 
 add_executable ( IFS ifs.cpp )
-target_link_libraries ( IFS gate )
+target_link_libraries ( IFS gate circuit )
 
