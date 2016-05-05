@@ -40,7 +40,7 @@ void Circuit::loadCircuit(const char* fileName) {
           //
           // Read Inputs
           //
-          if (parLine[0].find("INPUT") != parLine[1].npos ) {
+          if (parLine[0].find("INPUT") != parLine[0].npos ) {
             // parse input signal id
             size_t idPos = parLine[0].find("(") + 1;
             string sid = parLine[0].substr(idPos, parLine[0].length() - 1 - idPos);
@@ -56,7 +56,7 @@ void Circuit::loadCircuit(const char* fileName) {
           //
           // Read Outputs
           //
-          else if (parLine[0].find("OUTPUT") != parLine[1].npos ) {
+          else if (parLine[0].find("OUTPUT") != parLine[0].npos ) {
             // parse input signal id
             size_t idPos = parLine[0].find("(") + 1;
             string sid = parLine[0].substr(idPos, parLine[0].length() - 1 - idPos);
@@ -101,12 +101,10 @@ void Circuit::loadCircuit(const char* fileName) {
             int faninId2 = atoi(sFaninId2.c_str());
             
             // check if the fanins of the gate exist
-            checkFaninById(faninId1);
-            checkFaninById(faninId2);
 
             Gate** fanin = new Gate*[2];
-            fanin[0] = _gateLists[faninId1];
-            fanin[1] = _gateLists[faninId2];
+            fanin[0] = checkFaninById(faninId1);
+            fanin[1] = checkFaninById(faninId2);
             
             // check if gate fanout (id of gate) exist in gateList
             int gateId = atoi(parLine[0].c_str());
@@ -131,10 +129,12 @@ void Circuit::loadCircuit(const char* fileName) {
 }
 
 
-void Circuit::checkFaninById(int id) {
+Gate* Circuit::checkFaninById(int id) {
   if (_gateLists.find(id) == _gateLists.end()) {
     Gate newGate(id);
     Gate* pNewGate = new Gate(newGate);
     _gateLists[id] = pNewGate;
+    return pNewGate;
   }
+  else return _gateLists[id];
 }
