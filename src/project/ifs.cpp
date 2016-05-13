@@ -8,4 +8,5 @@ int main(int argc, const char** argv) {
   cout << "Enter ISF Project" << endl;
   Circuit c;
   c.loadCircuit(argv[1]);
+  c.checkGateLists();
 }

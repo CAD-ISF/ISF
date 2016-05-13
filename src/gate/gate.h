@@ -26,10 +26,11 @@ class Gate {
     Gate(int id, GateType type);
     Gate(int id, GateType type, vector<Gate*>* fanin);
     Gate(Gate &gate);
-      
+    ~Gate();
+
     int getId();
-    Gate** getFanin();
-    Gate** getFanout();
+    vector<Gate*>* getFanin();
+    vector<Gate*>* getFanout();
     GateType getGateType();
 
     void setGateType(GateType type);

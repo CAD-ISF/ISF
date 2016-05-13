@@ -8,7 +8,10 @@
 
 using namespace std;
 
-Circuit::Circuit(){}
+Circuit::Circuit(){
+  _inputs = NULL;
+  _outputs = NULL;
+}
 
 void Circuit::loadCircuit(const char* fileName) {
   ifstream cirFile(fileName);
@@ -128,17 +131,41 @@ void Circuit::loadCircuit(const char* fileName) {
 }
 
 Circuit::~Circuit() {
-  delete[] _inputs;
-  delete[] _outputs;
+  if (_inputs != NULL) delete[] _inputs;
+  if (_outputs != NULL) delete[] _outputs;
   for (map<int, Gate*>::iterator it = _gateLists.begin(); it != _gateLists.end(); ++it)
-    delete it->second;
+    if (it->second != NULL) delete it->second;
 }
 
-Gate* Circuit::checkFaninById(int id) {
+map< int, Gate* > Circuit::getGateLists() {
+  return _gateLists;
+}
+
+void Circuit::checkFaninById(int id) {
   if (_gateLists.find(id) == _gateLists.end()) {
     Gate* pNewGate = new Gate(id);
     _gateLists[id] = pNewGate;
-    return pNewGate;
   }
-  else return _gateLists[id];
+}
+
+void Circuit::checkId(int id) {
+  cout << "Gate: " << id 
+      << "\tType: " << _gateLists[id]->getGateType();
+
+  cout << "\nFanin: ";
+  size_t s = _gateLists[id]->getFanin()->size();
+  for (size_t i = 0; i < s; i++)
+    cout << (*(_gateLists[id]->getFanin()))[i]->getId() << ' ';
+  
+  cout << "\nFanout: ";
+  s = _gateLists[id]->getFanout()->size();
+  for (size_t i = 0; i < s; i++)
+    cout << (*(_gateLists[id]->getFanout()))[i]->getId() << ' ';
+
+  cout << "\n\n";
+}
+
+void Circuit::checkGateLists() {
+  for (map< int, Gate* >::iterator it = _gateLists.begin(); it != _gateLists.end(); ++it)
+    checkId(it->first);
 }

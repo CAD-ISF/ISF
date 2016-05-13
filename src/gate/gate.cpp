@@ -31,20 +31,19 @@ Gate::Gate(Gate &gate) {
 }
 
 Gate::~Gate() {
-  delete _fanin;
-  delete _nextGateList;
+  if (_fanin != NULL) delete _fanin;
+  if (_nextGateList != NULL) delete _nextGateList;
 }
 
 int Gate::getId() {
   return _id;
 }
 
-Gate** Gate::getFanin() {
+vector<Gate*>* Gate::getFanin() {
   return _fanin;
-
 }
 
-Gate** Gate::getFanout() {
+vector<Gate*>* Gate::getFanout() {
   return _nextGateList;
 }
 
