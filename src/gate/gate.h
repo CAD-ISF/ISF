@@ -2,6 +2,7 @@
 #define GATE_H_
 
 #include<map>
+#include<vector>
 #include<string>
 
 using namespace std;
@@ -23,20 +24,24 @@ class Gate {
   public:
     Gate(int id);
     Gate(int id, GateType type);
-    Gate(int id, GateType type, Gate** fanin);
+    Gate(int id, GateType type, vector<Gate*>* fanin);
     Gate(Gate &gate);
       
     int getId();
     Gate** getFanin();
+    Gate** getFanout();
     GateType getGateType();
 
-    void setFanin(Gate** fanin);
     void setGateType(GateType type);
+    void addFanin(Gate* fanin);
+    void addFanout(Gate* fanout);
+    void resetFanin();
+    void resetFanout();
 
   private:
     int _id;
-    Gate** _fanin;
-    Gate** _nextGateList;
+    vector<Gate*>* _fanin;
+    vector<Gate*>* _nextGateList;
     GateType _type;
 };
 

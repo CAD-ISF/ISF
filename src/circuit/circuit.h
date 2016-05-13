@@ -9,6 +9,7 @@ using namespace std;
 class Circuit {
   public:
     Circuit();
+    ~Circuit();
     void loadCircuit(const char* fileName);
     void checkFaninById(int id);
 
