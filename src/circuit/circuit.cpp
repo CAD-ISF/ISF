@@ -169,3 +169,17 @@ void Circuit::checkGateLists() {
   for (map< int, Gate* >::iterator it = _gateLists.begin(); it != _gateLists.end(); ++it)
     checkId(it->first);
 }
+
+void Circuit::outputDFS(int id, map<int, bool>& out) {
+    if (_gateLists[id]->getFanout()->size() == 0){
+        //cerr << id << " out!!!\n";
+        out[id] = true;
+        return;
+    }
+    else {
+        outputDFS((*(_gateLists[id]->getFanout()))[0]->getId(), out);
+        if(_gateLists[id]->getFanout()->size() > 1) outputDFS((*(_gateLists[id]->getFanout()))[1]->getId(), out);
+    }
+}
+
+

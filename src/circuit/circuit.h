@@ -18,6 +18,8 @@ class Circuit {
     void checkId(int id);
     void checkGateLists();
 
+    void outputDFS(int id, map<int, bool>& out);
+
   private:
     int* _inputs;
     int* _outputs;
