@@ -7,6 +7,7 @@ Gate::Gate(int id) {
   _id = id;
   _fanin = new vector<Gate*>;
   _nextGateList = new vector<Gate*>;
+  mark =0;
 }
 
 Gate::Gate(int id, GateType type) {
@@ -14,6 +15,7 @@ Gate::Gate(int id, GateType type) {
   _type = type;
   _fanin = new vector<Gate*>;
   _nextGateList = new vector<Gate*>;
+  mark =0;
 }
 
 Gate::Gate(int id, GateType type, vector<Gate*>* fanin) {
@@ -21,6 +23,7 @@ Gate::Gate(int id, GateType type, vector<Gate*>* fanin) {
   _type = type;
   _fanin = fanin;  
   _nextGateList = new vector<Gate*>;
+  mark =0;
 }
 
 Gate::Gate(Gate &gate) {
@@ -28,6 +31,7 @@ Gate::Gate(Gate &gate) {
   _type = gate._type;
   _fanin = gate._fanin;
   _nextGateList = gate._nextGateList;
+  mark =0;
 }
 
 Gate::~Gate() {

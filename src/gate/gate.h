@@ -29,6 +29,8 @@ class Gate {
     ~Gate();
 
     int getId();
+	bool mark;
+	unsigned value;
     vector<Gate*>* getFanin();
     vector<Gate*>* getFanout();
     GateType getGateType();
