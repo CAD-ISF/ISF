@@ -132,7 +132,7 @@ void Circuit::loadCircuit(const char* fileName) {
     cirFile.close();
   }
   for(int i=0;i<_osize;i++){
-  	topodfs(_outputs[i]);
+  	topoDfs(_outputs[i]);
   }
 }
 
@@ -201,18 +201,18 @@ int Circuit::getisize(){
 	return _isize;
 }
 
-void Circuit::topodfs(int a){
+void Circuit::topoDfs(int a){
 	if(_gateLists[a]->mark==0){
 		if(_gateLists[a]->getGateType()!=0){
 			for(int i=0;i<(_gateLists[a]->getFanin())->size();i++)
-				topodfs((*(_gateLists[a]->getFanin()))[i]->getId());
+				topoDfs((*(_gateLists[a]->getFanin()))[i]->getId());
 		}
 		_gateLists[a]->mark=1;
 		_topoorder->push_back(a);
 	}
 }
 
-vector<int>* Circuit::gettopo(){
+vector<int>* Circuit::getTopo(){
 	return _topoorder;
 }
 
