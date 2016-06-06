@@ -9,10 +9,10 @@ int main(int argc, const char** argv) {
     Circuit c; 
     c.loadCircuit(argv[1]);
     c.checkGateLists();
-	for(int i=0;i<(c.gettopo())->size();i++){
-		cout<<(*(c.gettopo()))[i]<<" ";
+	for(int i=0;i<(c.getTopo())->size();i++){
+		cout<<(*(c.getTopo()))[i]<<" ";
 	}
-	cout<<endl<<(c.gettopo())->size()<<endl;
+	cout<<endl<<(c.getTopo())->size()<<endl;
 	unsigned* pattern = new unsigned[c.getisize()];
 	for(int i=0;i<c.getisize();i++){
 		pattern[i] = rand()%4294967295;
