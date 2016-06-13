@@ -3,11 +3,14 @@
 
 #include<map>
 #include<gate/gate.h>
+#include <IFS/ifs.h>
 
 using namespace std;
 
+
 class Circuit {
   public:
+	friend class IFS;
     Circuit();
     ~Circuit();
     void loadCircuit(const char* fileName);
@@ -22,7 +25,7 @@ class Circuit {
 	int getisize();
 	void topodfs(int);
 	vector<int>* gettopo();
-	unsigned* simulate(unsigned*, int, int);
+	unsigned simulate(unsigned*, int, FaultType);
 
     void outputDFS(int id, map<int, bool>& out);
 

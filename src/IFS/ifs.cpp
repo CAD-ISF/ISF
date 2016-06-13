@@ -1,7 +1,11 @@
 #include<iostream>
 #include<fstream>
-#include<string>
+#include<string.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <malloc.h>
 #include"ifs.h"
+#include<circuit/circuit.h>
 
 using namespace std;
 
@@ -12,6 +16,9 @@ void IFS::loadFault(const char *filename) {
 
     ifstream faultFile(filename);
     string line, temp;
+	FaultType faulttype;
+	char* ch1;
+	char* ch2;
     while(getline(faultFile, line)) {
         size_t start = 0, end = 0;
         end = line.find_first_of(" \t\n", start);
@@ -29,12 +36,37 @@ void IFS::loadFault(const char *filename) {
                 _faultGateId.push_back(atoi(temp.c_str()));
                 break;
             }
-        }
-        
+        }     
         temp = line.substr(start, end - start);
-        //cout << temp << '\n';
-        if (temp != "") _faultTypeList.push_back(temp);
-        
+		temp.erase(0,temp.find_first_not_of("\t"));
+		if(int(temp[temp.length()-1])==13)
+			temp.erase(temp.length()-1,1);
+		//cout << temp << '\n';
+        //if (temp != "") _faultTypeList.push_back(temp);
+		if(temp=="SA0")
+			faulttype=SA0;
+		else if(temp=="SA1")
+			faulttype=SA1;
+		else if(temp=="NEG")
+			faulttype=NEG;
+		else if(temp=="RDOB_AND")
+			faulttype=RDOB_AND;
+		else if(temp=="RDOB_NAND")
+			faulttype=RDOB_NAND;
+		else if(temp=="RDOB_OR")
+			faulttype=RDOB_OR;
+		else if(temp=="RDOB_NOR")
+			faulttype=RDOB_NOR;
+		else if(temp=="RDOB_XOR")
+			faulttype=RDOB_XOR;
+		else if(temp=="RDOB_NXOR")
+			faulttype=RDOB_NXOR;
+		else if(temp=="RDOB_NOT")
+			faulttype=RDOB_NOT;
+		else if(temp=="RDOB_BUFF")
+			faulttype=RDOB_BUFF;
+ 		//cout<<endl<<temp<<endl<<temp.length();
+		_faultTypeList.push_back(faulttype);       
     }
 }
 
@@ -52,6 +84,22 @@ void IFS::faultOut(Circuit& c) {
         cout << '\n';
         _faultOutList.push_back(outs);
     }
+}
+
+vector<int>* IFS::getfId(){
+	return &_faultId;
+}
+
+vector<int>* IFS::getfGId(){
+	return &_faultGateId;
+}
+
+vector<FaultType>* IFS::getfTList(){
+	return &_faultTypeList;
+}
+
+vector< vector<int> >* IFS::getfOList(){
+	return &_faultOutList;
 }
 
 
