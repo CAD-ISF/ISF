@@ -5,5 +5,5 @@ include_directories ( ${CMAKE_SOURCE_DIR} )
 project ( IF_Searcher )
 
 add_executable ( IF_Searcher main.cpp )
-target_link_libraries ( IF_Searcher ifs myHash )
+target_link_libraries ( IF_Searcher ifs )
 
