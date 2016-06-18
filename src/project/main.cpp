@@ -6,9 +6,49 @@
 
 using namespace std;
 
+////////////////////////////////////////////////////////////////////////
+///                        DECLARATIONS                              ///
+////////////////////////////////////////////////////////////////////////
 void printfec(vector<vector<int> >&);
 
+// procedures to start and stop the ABC framework
+// (should be called before and after the ABC procedures are called)
+extern void   Abc_Start();
+extern void   Abc_Stop();
+
+// procedures to get the ABC framework and execute commands in it
+extern void *	   Abc_FrameGetGlobalFrame();
+extern void		   Abc_NtkDelete( Abc_Ntk_t * pNtk );
+extern Abc_Ntk_t * Abc_FrameReadNtk( void * p );
+extern void		   Abc_FrameSetCurrentNetwork( void * p, Abc_Ntk_t * pNtkNew );
+extern void		   Abc_FrameSwapCurrentAndBackup( void * p );
+extern void		   Abc_FrameReplaceCurrentNetwork( void * p, Abc_Ntk_t * pNtk );
+extern void		   Abc_FrameDeleteAllNetworks( void * p );
+extern int		   Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose );
+extern int		   Cmd_CommandExecute( void * pAbc, char * sCommand );
+
+////////////////////////////////////////////////////////////////////////
+///                     FUNCTION DEFINITIONS                         ///
+////////////////////////////////////////////////////////////////////////
+
+/**Function*************************************************************
+
+  Synopsis    [The main() procedure.]
+
+  Description [This procedure compiles into a stand-alone program for 
+  DAG-aware rewriting of the AIGs. A BLIF or PLA file to be considered
+  for rewriting should be given as a command-line argument. Implementation 
+  of the rewriting is inspired by the paper: Per Bjesse, Arne Boralv, 
+  "DAG-aware circuit compression for formal verification", Proc. ICCAD 2004.]
+               
+  SideEffects []
+
+  SeeAlso     []
+
+***********************************************************************/
 int main(int argc, const char** argv) {
+	//////////////////////////////////////////////////////////////////////////
+	// program start
 	cout << "Enter ISF Project" << endl;
 	Circuit c; 
 	c.loadCircuit(argv[1]);
@@ -16,114 +56,126 @@ int main(int argc, const char** argv) {
 	IFS ifs;
 	ifs.loadFault(argv[2]);
 	//ifs.faultOut(c);
-	int faultsize = (ifs.getfGId())->size();
-	unsigned answer;
-	unsigned* simu = new unsigned[faultsize];
-	//for(int i=0;i<(c.gettopo())->size();i++){
-	//cout<<(*(c.gettopo()))[i]<<" ";
-	//}
-	// randomly generate patterns
-	cout << "patterns : " << '\n';
-	unsigned* pattern = new unsigned[c.getisize()];
-	for(int i=0;i<c.getisize();i++){
-		unsigned pow = 1;
-		pattern[i] = 0;
-		for(int j = 0; j < 32; j++) {
-			pattern[i] += (rand() % 2) * pow;
-			if(j != 31) pow *= 2;
-		}
-		cout << '[' << c.getPI()[i] << "] = " << pattern[i] << '\n';
-	}
-	cout << '\n';
+	//ifs.groupf(c);
+	printfec(*(ifs.groupf(c)));
 
-	// simulation calculation
-	cout << "simulations : " << '\n';
-	for(int i=0;i<faultsize;i++){
-		answer = c.simulate(pattern, (*ifs.getfGId())[i] ,(*ifs.getfTList())[i]);
-		simu[i] = answer;
-		cout << '[' << (*ifs.getfId())[i] << "] = " << simu[i] << '\n';
-	}
-	cout << endl;
+	//////////////////////////////////////////////////////////////////////////
+	// ABC
+    // parameters
+    int fUseResyn2  = 0;
+    int fPrintStats = 1;
+    int fVerify     = 1;
+    // variables
+    void * pAbc;
+    char * pFileName;
+    char Command[1000];
+    clock_t clkRead, clkResyn, clkVer, clk;
+	int cntconflict = 0;
 
-	// first-time grouping......................................................
-	// .....
-	vector<vector<int> > fecgroup;	// list of all groups
-	MyHash* myhash = new MyHash(1024);
-	for (int i=0;i<faultsize;i++){
-		// check for faults with the same answer and catagorize
-		myhash->check((*ifs.getfId())[i], simu[i], simu);
-	}
-	// for all rough groups in myhash
-	for (int i = 0; i < myhash->numBuckets(); i++){
-		vector<vector<int> > f = (*myhash)[i];
-		for (int j=0; j < (*myhash)[i].size(); j++){
-			if (f[j].size() > 1)
-				fecgroup.push_back(f[j]);
-		}
-	}
-	//cout<<"first : "<<endl;
-	//printfec(fecgroup);
-	unsigned oldsize;
-	oldsize = fecgroup.size();
-	cout << "fecgroup size = " << oldsize << endl;
+    //////////////////////////////////////////////////////////////////////////
+    // get the input file name
+    if ( argc != 3 )
+    {
+        printf( "Wrong number of command-line arguments.\n" );
+        return 1;
+    }
+    pFileName = argv[1];
 
-	// Second time..............................................................
-	// .....
-	int count = 0;
-	while (count != 50) {
-		for (int i = 0; i < c.getisize(); i++) {
-			unsigned pow = 1;
-			pattern[i] = 0;
-			for (int j = 0; j < 32; j++) {
-				pattern[i] += (rand() % 2) * pow;
-				if (j != 31) pow *= 2;
-			}
-		}
-		vector<vector<int> > newfecgroup;	// new list of fec groups
-		vector<vector<int> > temp;	// new list of fec groups
-		bool same_answer;
-		// for each group
-		for ( int i = 0; i < fecgroup.size(); i++ ) {
-			temp.clear();
-			// generate simulation answer for each id
-			for ( int j = 0; j < (fecgroup[i]).size(); j++ ) {
-				size_t k = (fecgroup[i])[j] - 1;
-				simu[k] = c.simulate(pattern, (*ifs.getfGId())[k], (*ifs.getfTList())[k]);
-			}
-			// re-grouping
-			for ( int j = 0; j < (fecgroup[i]).size(); j++ ) {
-				same_answer = false;
-				for ( int k = 0; k < temp.size(); k++ ) {
-					vector<int>* f = &(temp[k]);
-					if ( simu[ (*f)[0] - 1 ] == simu[ (fecgroup[i])[j] - 1 ] ) {
-						same_answer = true;
-						f->push_back((fecgroup[i])[j]);
-						break;
-					}
-				}
-				if ( same_answer == false ) {
-					vector<int> newvector;
-					newvector.push_back( (fecgroup[i])[j] );
-					temp.push_back( newvector );
-				}
-			}
-			for ( int k = 0; k < temp.size(); k++ ) {
-				if ( temp[k].size() > 1 ) {
-					newfecgroup.push_back( temp[k] );
-				}
-			}
-		}
-		if ( oldsize == newfecgroup.size() ) count++;
-		else cout << "fecgroup size = " << newfecgroup.size() << endl;
-		fecgroup = newfecgroup;
-		oldsize = fecgroup.size();
+    //////////////////////////////////////////////////////////////////////////
+    // start the ABC framework
+    Abc_Start();
+	pAbc = Abc_FrameGetGlobalFrame();
+
+	//////////////////////////////////////////////////////////////////
+	// read the file
+	sprintf( Command, "read %s", pFileName );
+	if ( Cmd_CommandExecute( pAbc, Command ) )
+	{
+		fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
+		return 1;
 	}
-	//cout<<"second : "<<endl;
+			
+	vector<vector<int> > newfecgroup;
+	for ( size_t i = 0; i < ifs.getFecGroup()->size(); i++ ) {
+		vector<int> &fecgroup = (*ifs.getFecGroup())[i];
+		map< int, Abc_Ntk_t * > fNtk;
+
+		for ( size_t j = 0; j < fecgroup.size(); j++ ) {
+
+			//////////////////////////////////////////////////////////////////
+			// inject fault node
+			sprintf( Command, "inject_fault n%d %d", 
+					 ifs.getfGIdbyfId( fecgroup[j] ), ifs.getfTbyfId( fecgroup[j] ) );
+			if ( Cmd_CommandExecute( pAbc, Command ) )
+			{
+				fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
+				return 1;
+			}
+
+			//////////////////////////////////////////////////////////////////
+			// balance
+			sprintf( Command, "balance" );
+			if ( Cmd_CommandExecute( pAbc, Command ) )
+			{
+				fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
+				return 1;
+			}
+
+			//////////////////////////////////////////////////////////////////
+			// write file
+			sprintf( Command, "write %s.%d", pFileName, fecgroup[j] );
+			if ( Cmd_CommandExecute( pAbc, Command ) )
+			{
+				fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
+				return 1;
+			}
+
+			//////////////////////////////////////////////////////////////////
+			// delete current ntk and use backup ntk
+			pNtk = Abc_FrameReadNtk( pAbc );
+			fNtk[ fecgroup[j] ] = Abc_NtkDup( pNtk );
+			Abc_NtkDelete( pNtk );
+			Abc_FrameSwapCurrentAndBackup( pAbc );
+		}
+
+		for ( size_t j = 0; j < fecgroup.size() - 1; j++ ) {
+			newfecgroup.push_back(vector<int>());
+			newfecgroup.back().push_back( fecgroup[j] );
+			for ( size_t k = j + 1; k < fecgroup.size(); k++ ) {
+				
+				//////////////////////////////////////////////////////////////
+				// cec ( SAT + Fraig )
+				int sat = Abc_NtkCecFraig( fNtk[ fecgroup[j] ], fNtk[ fecgroup[k] ], 20, 0 );
+				if ( sat == -1 ) cntconflict++;		// undefined
+				else if ( sat == 0 ) cntconflict++;	// not equivalent
+				else if ( sat == 1 ) {	// equivalent
+					newfecgroup.back().push_back( fecgroup[k] );
+				}
+			}
+		}
+
+		for ( map< int, Abc_Ntk_t * >::iterator it = fNtk.begin(); it != fNtk.end(); it++ ) {
+			Abc_NtkDelete( it->second );
+		}
+	}
+
+	vector<vector<int> > &fecgroup = (*(ifs.getFecGroup()));
+	fecgroup.clean();
+	for ( int i = 0; i < newfecgroup.size(); i++) {
+		if ( newfecgroup[i].size() > 1 ) {
+			for ( int j = 0; j < newfecgroup[i].size() - 1 ; j++ ) {
+				for ( int k = j + 1; k < newfecgroup[i].size(); k++ ) {
+					fecgroup.push_back(vector<int>());
+					fecgroup.back().push_back(newfecgroup[j]);
+					fecgroup.back().push_back(newfecgroup[k]);
+				}
+			}
+		}
+	}
+	
 	printfec(fecgroup);
-
-
-	delete [] pattern;
-	delete [] simu;
+	
+	return 0;
 }
 
 void printfec ( vector<vector<int> >& a ) {
@@ -139,3 +191,4 @@ void printfec ( vector<vector<int> >& a ) {
 	}
 	cout << "group count = " << count << endl;
 }
+
