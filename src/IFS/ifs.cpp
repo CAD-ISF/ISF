@@ -3,7 +3,7 @@
 #include<string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <malloc.h>
+#include <malloc/malloc.h>
 #include"ifs.h"
 #include<circuit/circuit.h>
 
