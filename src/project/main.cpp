@@ -5,10 +5,10 @@
 using namespace std;
 
 int main(int argc, const char** argv) {
-    cout << "Enter ISF Project" << endl;
-    Circuit c; 
-    c.loadCircuit(argv[1]);
-    c.checkGateLists();
+	cout << "Enter ISF Project" << endl;
+	Circuit c; 
+	c.loadCircuit(argv[1]);
+	c.checkGateLists();
 	for(int i=0;i<(c.getTopo())->size();i++){
 		cout<<(*(c.getTopo()))[i]<<" ";
 	}
