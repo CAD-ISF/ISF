@@ -70,6 +70,7 @@ void IFS::loadFault(const char *filename) {
     }
 }
 
+// find primary outputs of each fault gate
 void IFS::faultOut(Circuit& c) {
     cout << "faultOut!\n";
     for(size_t i = 0; i < _faultGateId.size(); i++) {
