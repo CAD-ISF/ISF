@@ -8,44 +8,44 @@
 using namespace std;
 
 enum GateType {
-  INPUT,
-  BUFF,
-  NOT,
-  AND,
-  NAND,
-  OR,
-  NOR,
-  XOR,
-  NXOR
+	INPUT,
+	BUFF,
+	NOT,
+	AND,
+	NAND,
+	OR,
+	NOR,
+	XOR,
+	NXOR
 };
 
 
 class Gate {
   public:
-    Gate(int id);
-    Gate(int id, GateType type);
-    Gate(int id, GateType type, vector<Gate*>* fanin);
-    Gate(Gate &gate);
-    ~Gate();
+	Gate(int id);
+	Gate(int id, GateType type);
+	Gate(int id, GateType type, vector<Gate*>* fanin);
+	Gate(Gate &gate);
+	~Gate();
 
-    int getId();
+	int getId();
 	bool mark;
 	unsigned value;
-    vector<Gate*>* getFanin();
-    vector<Gate*>* getFanout();
-    GateType getGateType();
+	vector<Gate*>* getFanin();
+	vector<Gate*>* getFanout();
+	GateType getGateType();
 
-    void setGateType(GateType type);
-    void addFanin(Gate* fanin);
-    void addFanout(Gate* fanout);
-    void resetFanin();
-    void resetFanout();
+	void setGateType(GateType type);
+	void addFanin(Gate* fanin);
+	void addFanout(Gate* fanout);
+	void resetFanin();
+	void resetFanout();
 
   private:
-    int _id;
-    vector<Gate*>* _fanin;
-    vector<Gate*>* _nextGateList;
-    GateType _type;
+	int _id;
+	vector<Gate*>* _fanin;
+	vector<Gate*>* _nextGateList;
+	GateType _type;
 };
 
 #endif
