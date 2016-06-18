@@ -3,9 +3,23 @@
 
 #include<map>
 #include<gate/gate.h>
-#include <IFS/ifs.h>
+//#include <IFS/ifs.h>
 
 using namespace std;
+
+enum FaultType {
+	SA0,
+	SA1,
+	NEG,
+	RDOB_AND,
+	RDOB_NAND,
+	RDOB_OR,
+	RDOB_NOR,
+	RDOB_XOR,
+	RDOB_NXOR,
+	RDOB_NOT,
+	RDOB_BUFF
+};
 
 
 class Circuit {
