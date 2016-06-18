@@ -113,8 +113,42 @@ int main(int argc, const char** argv) {
 				}
 			}
 		}
-		if ( oldsize == newfecgroup.size() ) count++;
-		else cout << "fecgroup size = " << newfecgroup.size() << endl;
+
+		int mode = 2;
+		switch ( mode ) {
+			case 1:
+			// super easy grouping
+			{
+				count++;
+				if ( oldsize == newfecgroup.size() ) ;
+				else cout << "fecgroup size = " << newfecgroup.size() << endl;
+				break;
+			}
+			case 2:
+			//easy grouping
+			{
+				if ( oldsize == newfecgroup.size() ) count++;
+				else cout << "fecgroup size = " << newfecgroup.size() << endl;
+				break;
+			}
+			case 3:
+			//hard grouping
+			{
+				if ( oldsize == newfecgroup.size() ) count++;
+				else {
+					cout << "fecgroup size = " << newfecgroup.size() << endl;
+					count = 0;
+				}
+				break;
+			}
+			default:
+			//easy grouping
+			{
+				if ( oldsize == newfecgroup.size() ) count++;
+				else cout << "fecgroup size = " << newfecgroup.size() << endl;
+				break;
+			}
+		}
 		fecgroup = newfecgroup;
 		oldsize = fecgroup.size();
 	}
@@ -124,6 +158,7 @@ int main(int argc, const char** argv) {
 
 	delete [] pattern;
 	delete [] simu;
+
 }
 
 void printfec ( vector<vector<int> >& a ) {
