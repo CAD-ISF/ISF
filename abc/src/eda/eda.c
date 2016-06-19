@@ -159,8 +159,8 @@ EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
     faultType = argv[globalUtilOptind + 1];
     
     pNtkRes = Abc_NtkDup( pNtk );
-    id = Nm_ManFindIdByName( pNtk->pManName, pName + 1, -1);
-    pNodeOld = Abc_NtkObj( pNtk, id );
+    id = Nm_ManFindIdByName( pNtkRes->pManName, pName + 1, -1);
+    pNodeOld = Abc_NtkObj( pNtkRes, id );
     
     // pNodeFault = Abc_NtkCreateNode( pNtk, ABC_OBJ_NODE );
     // SA0, SA1, NEG
