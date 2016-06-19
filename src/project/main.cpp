@@ -158,6 +158,8 @@ int main(int argc, const char** argv) {
 			Abc_NtkDelete( it->second );
 		}
 	}
+	Abc_FrameDeleteAllNetworks( pAbc );
+	Abc_Stop();
 
 	vector<vector<int> > &fecgroup = (*(ifs.getFecGroup()));
 	fecgroup.clean();
