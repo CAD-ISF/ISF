@@ -120,14 +120,14 @@ void Abc_NtkCecSat( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nConfLimit, int nI
   SeeAlso     []
 
 ***********************************************************************/
-void Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose )
+int Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose )
 {
     Prove_Params_t Params, * pParams = &Params;
 //    Fraig_Params_t Params;
 //    Fraig_Man_t * pMan;
     Abc_Ntk_t * pMiter, * pTemp;
     Abc_Ntk_t * pExdc = NULL;
-    int RetValue;
+    int RetValue = -1;
 
     if ( pNtk1->pExdc != NULL || pNtk2->pExdc != NULL )
     {
@@ -156,7 +156,7 @@ void Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fV
     if ( pMiter == NULL )
     {
         printf( "Miter computation has failed.\n" );
-        return;
+        return RetValue;
     }
     // add EXDC to the miter
     if ( pExdc )
@@ -176,13 +176,13 @@ void Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fV
         Abc_NtkVerifyReportError( pNtk1, pNtk2, pMiter->pModel );
         ABC_FREE( pMiter->pModel );
         Abc_NtkDelete( pMiter );
-        return;
+        return RetValue;
     }
     if ( RetValue == 1 )
     {
         printf( "Networks are equivalent after structural hashing.\n" );
         Abc_NtkDelete( pMiter );
-        return;
+        return RetValue;
     }
 /*
     // convert the miter into a FRAIG
@@ -235,6 +235,7 @@ void Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fV
     if ( pMiter->pModel )
         Abc_NtkVerifyReportError( pNtk1, pNtk2, pMiter->pModel );
     Abc_NtkDelete( pMiter );
+	return RetValue;
 }
 
 /**Function*************************************************************

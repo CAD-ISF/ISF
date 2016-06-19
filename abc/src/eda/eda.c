@@ -177,7 +177,7 @@ EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
     }
     // RDOB
     // the node cannot be Pi if want to replace driver operator
-    else if ( Abc_ObjFaninNum(pNodeOld) ) 
+    else if ( Abc_ObjFaninNum(pNodeOld) > 0 ) 
     {
         if ( !Eda_ReplaceWithFaultNode(id, faultType, pNodeOld) )
         {
