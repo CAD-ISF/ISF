@@ -161,15 +161,12 @@ EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
     pNtkRes = Abc_NtkDup( pNtk );
     id = Nm_ManFindIdByName( pNtk->pManName, pName + 1, -1);
     pNodeOld = Abc_NtkObj( pNtk, id );
-    /*pNodeOld = Abc_NtkFindNode(pNtkRes, pName + 1);*/
     
-    
-    /*id = atoi( pName + 1 );*/
     // pNodeFault = Abc_NtkCreateNode( pNtk, ABC_OBJ_NODE );
     // SA0, SA1, NEG
     if ( strncmp( faultType, "RDOB", 4 ) != 0 ) 
     {
-        if ( !Eda_InsertFaultNode(id, faultType, pNodeOld) )
+        if ( !Eda_InsertFaultNode(faultType, pNodeOld) )
         {
             Abc_Print( -1, "Invalid fault type.\n" );
             goto usage;
@@ -179,7 +176,7 @@ EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
     // the node cannot be Pi if want to replace driver operator
     else if ( Abc_ObjFaninNum(pNodeOld) > 0 ) 
     {
-        if ( !Eda_ReplaceWithFaultNode(id, faultType, pNodeOld) )
+        if ( !Eda_ReplaceWithFaultNode(faultType, pNodeOld) )
         {
             Abc_Print( -1, "Invalid fault type\n");
             goto usage;

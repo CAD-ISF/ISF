@@ -48,7 +48,7 @@ int Eda_ReplaceWithFaultNode( int, char *, Abc_Obj_t * );
  ***********************************************************************/
 
 int
-Eda_InsertFaultNode( int id, char * faultType, Abc_Obj_t * pNode)
+Eda_InsertFaultNode( char * faultType, Abc_Obj_t * pNode)
 {
     Abc_Obj_t * pNodeConst, * pNodeInsert;
 
@@ -92,7 +92,7 @@ Eda_InsertFaultNode( int id, char * faultType, Abc_Obj_t * pNode)
 }
 
 int
-Eda_ReplaceWithFaultNode( int id, char * faultType, Abc_Obj_t * pNodeOld )
+Eda_ReplaceWithFaultNode( char * faultType, Abc_Obj_t * pNodeOld )
 {
     Abc_Obj_t * pNodeFault, * pNodeFanin;
     int i;
