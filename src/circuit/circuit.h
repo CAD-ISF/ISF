@@ -3,11 +3,28 @@
 
 #include<map>
 #include<gate/gate.h>
+//#include <IFS/ifs.h>
 
 using namespace std;
 
+enum FaultType {
+	SA0,
+	SA1,
+	NEG,
+	RDOB_AND,
+	RDOB_NAND,
+	RDOB_OR,
+	RDOB_NOR,
+	RDOB_XOR,
+	RDOB_NXOR,
+	RDOB_NOT,
+	RDOB_BUFF
+};
+
+
 class Circuit {
   public:
+	friend class IFS;
 	Circuit();
 	~Circuit();
 	void loadCircuit(const char* fileName);
@@ -17,14 +34,13 @@ class Circuit {
 	void checkFaninById(int id);
 	void checkId(int id);
 	void checkGateLists();
-
+	int* getPI();
 	int* getPO();
 	int getosize();
 	int getisize();
-
-	void topoDfs(int);
-	vector<int>* getTopo();
-	unsigned* simulate(unsigned*, int, int);
+	void topodfs(int);
+	vector<int>* gettopo();
+	unsigned simulate(unsigned*, int, FaultType);
 
 	void outputDFS(int id, map<int, bool>& out);
   
@@ -33,7 +49,6 @@ class Circuit {
 	int* _outputs;
 	int _osize;
 	int _isize;
-
 	map< int, Gate* > _gateLists;
 	vector<int>* _topoorder;
 };

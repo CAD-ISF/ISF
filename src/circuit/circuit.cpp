@@ -9,9 +9,9 @@
 using namespace std;
 
 Circuit::Circuit(){
-  _inputs = NULL;
-  _outputs = NULL;
-  _topoorder = new vector<int>;
+	_inputs = NULL;
+	_outputs = NULL;
+	_topoorder = new vector<int>;
 }
 
 void Circuit::loadCircuit(const char* fileName) {
@@ -141,9 +141,9 @@ void Circuit::loadCircuit(const char* fileName) {
 Circuit::~Circuit() {
 	if (_inputs != NULL) delete[] _inputs;
 	if (_outputs != NULL) delete[] _outputs;
-	for (map<int, Gate*>::iterator it = _gateLists.begin(); it != _gateLists.end(); ++it) {
+	for (map<int, Gate*>::iterator it = _gateLists.begin(); it != _gateLists.end(); ++it)
 		if (it->second != NULL) delete it->second;
-	}
+	delete _topoorder;
 }
 
 // return list of all gates
@@ -166,6 +166,7 @@ void Circuit::checkId(int id) {
 
 	cout << "\nFanin: ";
 	size_t s = _gateLists[id]->getFanin()->size();
+<<<<<<< HEAD
 	for (size_t i = 0; i < s; i++) {
 		cout << (*(_gateLists[id]->getFanin()))[i]->getId() << ' ';
 	}
@@ -194,10 +195,13 @@ void Circuit::outputDFS(int id, map<int, bool>& out) {
 	}
 	else {
 		outputDFS((*(_gateLists[id]->getFanout()))[0]->getId(), out);
-		if (_gateLists[id]->getFanout()->size() > 1) { 
+		if (_gateLists[id]->getFanout()->size() > 1) 
 			outputDFS((*(_gateLists[id]->getFanout()))[1]->getId(), out);
-		}
 	}
+}
+
+int* Circuit::getPI(){
+	return _inputs;
 }
 
 int* Circuit::getPO(){
@@ -228,62 +232,64 @@ vector<int>* Circuit::getTopo(){
 	return _topoorder;
 }
 
-unsigned* Circuit::simulate(unsigned* input, int faultgate, int faulttype){
-	unsigned* answer = new unsigned[_osize];
+unsigned Circuit::simulate(unsigned* input, int faultgate, FaultType faulttype){
+	unsigned answer = 0;
+	unsigned temp;
 	int picount = 0;
 	int s = _topoorder->size();
 	int type;
-	unsigned value1;
-	unsigned value2;
+	unsigned value1=0;
+	unsigned value2=0;
 	for (int i=0;i<s;i++) {
 		type = _gateLists[(*_topoorder)[i]]->getGateType();
 		for (int j=0;j<(_gateLists[(*_topoorder)[i]]->getFanin())->size();j++) {
-			if (j==0&&type!=0)
+			if (j==0&&type!=INPUT)
 				value1 = (*(_gateLists[(*_topoorder)[i]]->getFanin()))[j]->value;
-			if (j==1&&type!=0)
+			if (j==1&&type!=INPUT)
 				value2 = (*(_gateLists[(*_topoorder)[i]]->getFanin()))[j]->value;
 		}
-		if (type==0) {
+		if (type==INPUT) {
 			_gateLists[(*_topoorder)[i]]->value = input[picount];
 			//cout<<(*_topoorder)[i]<<" "<<input[picount]<<endl;
 			picount++;
 			if ((*_topoorder)[i]==faultgate) {
-				if (faulttype ==0)
+				if (faulttype ==SA0)
 					_gateLists[(*_topoorder)[i]]->value = 0;
-				else if (faulttype ==1)
+				else if (faulttype ==SA1)
 					_gateLists[(*_topoorder)[i]]->value = 4294967295;
-				else if (faulttype ==2)
+				else if (faulttype ==NEG)
 					_gateLists[(*_topoorder)[i]]->value = 4294967295-_gateLists[(*_topoorder)[i]]->value;
 			}
 		}
 		else {
-			if (type==1) _gateLists[(*_topoorder)[i]]->value = value1;
-			else if (type==2) _gateLists[(*_topoorder)[i]]->value = 4294967295-value1;
-			else if (type==3) _gateLists[(*_topoorder)[i]]->value = value1 & value2;
-			else if (type==4) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 & value2);
-			else if (type==5) _gateLists[(*_topoorder)[i]]->value = value1 | value2;
-			else if (type==6) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 | value2);
-			else if (type==7) _gateLists[(*_topoorder)[i]]->value = value1 ^ value2;
-			else if (type==8) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 ^ value2);	
+			if (type==BUFF) _gateLists[(*_topoorder)[i]]->value = value1;
+			else if (type==NOT) _gateLists[(*_topoorder)[i]]->value = 4294967295-value1;
+			else if (type==AND) _gateLists[(*_topoorder)[i]]->value = value1 & value2;
+			else if (type==NAND) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 & value2);
+			else if (type==OR) _gateLists[(*_topoorder)[i]]->value = value1 | value2;
+			else if (type==NOR) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 | value2);
+			else if (type==XOR) _gateLists[(*_topoorder)[i]]->value = value1 ^ value2;
+			else if (type==NXOR) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 ^ value2);	
 			if((*_topoorder)[i]==faultgate) {
-				if (faulttype==0) _gateLists[(*_topoorder)[i]]->value = 0;
-				else if (faulttype==1) _gateLists[(*_topoorder)[i]]->value = 4294967295;
-				else if (faulttype==2) _gateLists[(*_topoorder)[i]]->value = 4294967295-_gateLists[(*_topoorder)[i]]->value;
-				else if (faulttype==3) _gateLists[(*_topoorder)[i]]->value = value1 & value2;
-				else if (faulttype==4) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 & value2);
-				else if (faulttype==5) _gateLists[(*_topoorder)[i]]->value = value1 | value2;
-				else if (faulttype==6) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 | value2);
-				else if (faulttype==7) _gateLists[(*_topoorder)[i]]->value = value1 ^ value2;
-				else if (faulttype==8) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 ^ value2);
-				else if (faulttype==9) _gateLists[(*_topoorder)[i]]->value = 4294967295-value1;
-				else if (faulttype==10) _gateLists[(*_topoorder)[i]]->value = value1;
+				if (faulttype==SA0) _gateLists[(*_topoorder)[i]]->value = 0;
+				else if (faulttype==SA1) _gateLists[(*_topoorder)[i]]->value = 4294967295;
+				else if (faulttype==NEG) _gateLists[(*_topoorder)[i]]->value = 4294967295-_gateLists[(*_topoorder)[i]]->value;
+				else if (faulttype==RDOB_AND) _gateLists[(*_topoorder)[i]]->value = value1 & value2;
+				else if (faulttype==RDOB_NAND) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 & value2);
+				else if (faulttype==RDOB_OR) _gateLists[(*_topoorder)[i]]->value = value1 | value2;
+				else if (faulttype==RDOB_NOR) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 | value2);
+				else if (faulttype==RDOB_XOR) _gateLists[(*_topoorder)[i]]->value = value1 ^ value2;
+				else if (faulttype==RDOB_NXOR) _gateLists[(*_topoorder)[i]]->value = 4294967295-(value1 ^ value2);
+				else if (faulttype==RDOB_NOT) _gateLists[(*_topoorder)[i]]->value = 4294967295-value1;
+				else if (faulttype==RDOB_BUFF) _gateLists[(*_topoorder)[i]]->value = value1;
 			}
 		}
 		//cout<<(*_topoorder)[i]<<" "<<_gateLists[(*_topoorder)[i]]->value<<" "<<value1<<" "<<value2<<endl;	
 	}
 	for (int i=0;i<_osize;i++) {
-  		answer[i] = _gateLists[_outputs[i]]->value;
-  	}
+		temp = _gateLists[_outputs[i]]->value;
+		answer += temp;
+	}
 	return answer;
 }
 

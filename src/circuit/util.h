@@ -1,10 +1,11 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
-#include<vector>
-#include<string>
+#include  <vector>
+#include  <string>
 
 using namespace std;
+
 
 void strParse(string str, vector<string> &parStr) {
 	size_t fSpc = 0, fnSpc = 0;   // First space pos, First not space pos
