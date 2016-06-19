@@ -1,0 +1,14 @@
+r c6288.bench
+st
+ps
+resyn
+ps
+w c6288.aig
+time
+cec c6288.bench c6288.aig
+time
+cec -s c6288.bench c6288.aig
+time
+cec -s -C 10000000 c6288.bench c6288.aig
+time
+q
