@@ -62,14 +62,14 @@ int main(int argc, const char** argv) {
 	//////////////////////////////////////////////////////////////////////////
 	// ABC
     // parameters
-    int fUseResyn2  = 0;
-    int fPrintStats = 1;
-    int fVerify     = 1;
+    //int fUseResyn2  = 0;
+    //int fPrintStats = 1;
+    //int fVerify     = 1;
     // variables
     void * pAbc;
     char * pFileName;
     char Command[1000];
-    clock_t clkRead, clkResyn, clkVer, clk;
+    //clock_t clkRead, clkResyn, clkVer, clk;
 	int cntconflict = 0;
 
     //////////////////////////////////////////////////////////////////////////
