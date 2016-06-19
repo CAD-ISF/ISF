@@ -71,8 +71,7 @@ void IFS::loadFault(const char *filename) {
 		//cout<<endl<<temp<<endl<<temp.length();
 		_faultTypeList.push_back(faulttype);       
 		
-		_fault[ _faultId[ _faultId.size() - 1 ] ] = 
-			make_pair( _faultGId[ _faultGId.size() - 1 ], _faultTypeList[ _faultTypeList.size() - 1] );
+		_fault[ _faultId.back() ] = make_pair( _faultGateId.back(), _faultTypeList.back() );
 	}
 }
 
@@ -136,26 +135,30 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 			pattern[i] += ( rand() % 2 ) * pow;
 			if ( j != 31 ) pow *= 2;
 		}
-		//char print[1000];
-		//sprintf(print, "[%d] = ", c.getPI()[i]);
-		//cout << setw(8) << print;
-		//printinBinary(pattern[i]);
-		//cout << '\n';
 	}
-	//cout << '\n';
+	for ( int i = 0; i < c.getisize(); i++ ) {
+		char print[1000];
+		sprintf(print, "[%d] = ", c.getPI()[i]);
+		cout << setw(10) << print;
+		printinBinary(pattern[i]);
+		cout << '\n';
+	}
+	cout << '\n';
 
 	// simulation calculation
 	cout << "simulations : " << '\n';
 	for ( int i = 0; i < faultsize; i++ ) {
 		answer = c.simulate(pattern, _faultGateId[i] ,_faultTypeList[i]);
 		simu[i] = answer;
-		//char print[1000];
-		//sprintf(print, "[%d] = ", _faultId[i]);
-		//cout << setw(8) << print;
-		//printinBinary(simu[i]);
-		//cout << '\n';
 	}
-	//cout << endl;
+	for ( int i = 0; i < faultsize; i++ ) {
+		char print[1000];
+		sprintf(print, "[%d] = ", _faultId[i]);
+		cout << setw(10) << print;
+		printinBinary(simu[i]);
+		cout << '\n';
+	}
+	cout << endl;
 
 	// first-time grouping......................................................
 	// .....
@@ -181,7 +184,7 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 	// Second-time grouping.....................................................
 	// .....
 	int count = 0;
-	while ( count != 50 ) {
+	while ( count != 500 ) {
 		for ( int i = 0; i < c.getisize(); i++ ) {
 			unsigned pow = 1;
 			pattern[i] = 0;
@@ -226,8 +229,8 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 		}
 		if ( oldsize == newfecgroup.size() ) count++;
 		else {
-			//cout << "_fecGroup size = " << newfecgroup.size() << endl;
-			//count = 0;
+			cout << "_fecGroup size = " << newfecgroup.size() << endl;
+			count = 0;
 		}
 		_fecGroup = newfecgroup;
 		oldsize = _fecGroup.size();
