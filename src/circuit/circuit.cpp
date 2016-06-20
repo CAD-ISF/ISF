@@ -131,8 +131,10 @@ void Circuit::loadCircuit(const char* fileName) {
 		}
 		cirFile.close();
 	}
+
+	// construct _topoorder
 	for(int i=0;i<_osize;i++){
-		topodfs(_outputs[i]);
+		topoDfs(_outputs[i]);
 	}
 }
 
@@ -144,10 +146,12 @@ Circuit::~Circuit() {
 	delete _topoorder;
 }
 
+// return list of all gates
 map< int, Gate* > Circuit::getGateLists() {
 	return _gateLists;
 }
 
+// check whether _gateLists[id] exist, if no, create one
 void Circuit::checkFaninById(int id) {
 	if (_gateLists.find(id) == _gateLists.end()) {
 		Gate* pNewGate = new Gate(id);
@@ -155,31 +159,37 @@ void Circuit::checkFaninById(int id) {
 	}
 }
 
+// get informations of _gateLists[id]
 void Circuit::checkId(int id) {
 	cout << "Gate: " << id 
 		<< "\tType: " << _gateLists[id]->getGateType();
 
 	cout << "\nFanin: ";
 	size_t s = _gateLists[id]->getFanin()->size();
-	for (size_t i = 0; i < s; i++)
+<<<<<<< HEAD
+	for (size_t i = 0; i < s; i++) {
 		cout << (*(_gateLists[id]->getFanin()))[i]->getId() << ' ';
+	}
 
 	cout << "\nFanout: ";
 	s = _gateLists[id]->getFanout()->size();
-	for (size_t i = 0; i < s; i++)
+	for (size_t i = 0; i < s; i++) {
 		cout << (*(_gateLists[id]->getFanout()))[i]->getId() << ' ';
+	}
 
 	cout << "\n\n";
 }
 
+// get informations of all gates
 void Circuit::checkGateLists() {
-	for (map< int, Gate* >::iterator it = _gateLists.begin(); it != _gateLists.end(); ++it)
+	for (map< int, Gate* >::iterator it = _gateLists.begin(); it != _gateLists.end(); ++it) {
 		checkId(it->first);
+	}
 }
 
+// find the primary outputs of _gateLists[id] by DFS
 void Circuit::outputDFS(int id, map<int, bool>& out) {
-	if (_gateLists[id]->getFanout()->size() == 0){
-		//cerr << id << " out!!!\n";
+	if (_gateLists[id]->getFanout()->size() == 0) {
 		out[id] = true;
 		return;
 	}
@@ -206,18 +216,19 @@ int Circuit::getisize(){
 	return _isize;
 }
 
-void Circuit::topodfs(int a){
+// topology order DFS
+void Circuit::topoDfs(int a){
 	if(_gateLists[a]->mark==0){
 		if(_gateLists[a]->getGateType()!=0){
 			for(int i=0;i<(_gateLists[a]->getFanin())->size();i++)
-				topodfs((*(_gateLists[a]->getFanin()))[i]->getId());
+				topoDfs((*(_gateLists[a]->getFanin()))[i]->getId());
 		}
 		_gateLists[a]->mark=1;
 		_topoorder->push_back(a);
 	}
 }
 
-vector<int>* Circuit::gettopo(){
+vector<int>* Circuit::getTopo(){
 	return _topoorder;
 }
 

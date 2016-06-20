@@ -71,8 +71,7 @@ void IFS::loadFault(const char *filename) {
 		//cout<<endl<<temp<<endl<<temp.length();
 		_faultTypeList.push_back(faulttype);       
 		
-		_fault[ _faultId[ _faultId.size() - 1 ] ] = 
-			make_pair( _faultGId[ _faultGId.size() - 1 ], _faultTypeList[ _faultTypeList.size() - 1] );
+		_fault[ _faultId.back() ] = make_pair( _faultGateId.back(), _faultTypeList.back() );
 	}
 }
 
@@ -136,6 +135,7 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 			pattern[i] += ( rand() % 2 ) * pow;
 			if ( j != 31 ) pow *= 2;
 		}
+<<<<<<< HEAD
 		//char print[1000];
 		//sprintf(print, "[%d] = ", c.getPI()[i]);
 		//cout << setw(8) << print;
@@ -143,12 +143,24 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 		//cout << '\n';
 	}
 	//cout << '\n';
+=======
+	}
+	for ( int i = 0; i < c.getisize(); i++ ) {
+		char print[1000];
+		sprintf(print, "[%d] = ", c.getPI()[i]);
+		cout << setw(10) << print;
+		printinBinary(pattern[i]);
+		cout << '\n';
+	}
+	cout << '\n';
+>>>>>>> 09e04158801e5d25177748f947bd0da0f959d8e1
 
 	// simulation calculation
 	cout << "simulations : " << '\n';
 	for ( int i = 0; i < faultsize; i++ ) {
 		answer = c.simulate(pattern, _faultGateId[i] ,_faultTypeList[i]);
 		simu[i] = answer;
+<<<<<<< HEAD
 		//char print[1000];
 		//sprintf(print, "[%d] = ", _faultId[i]);
 		//cout << setw(8) << print;
@@ -156,6 +168,17 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 		//cout << '\n';
 	}
 	//cout << endl;
+=======
+	}
+	for ( int i = 0; i < faultsize; i++ ) {
+		char print[1000];
+		sprintf(print, "[%d] = ", _faultId[i]);
+		cout << setw(10) << print;
+		printinBinary(simu[i]);
+		cout << '\n';
+	}
+	cout << endl;
+>>>>>>> 09e04158801e5d25177748f947bd0da0f959d8e1
 
 	// first-time grouping......................................................
 	// .....
@@ -173,6 +196,7 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 				_fecGroup.push_back(f[j]);
 		}
 	}
+<<<<<<< HEAD
 
 	unsigned oldsize;
 	oldsize = _fecGroup.size();
@@ -238,6 +262,73 @@ vector<vector<int> >* IFS::groupf(Circuit &c) {
 	return &_fecGroup;
 }
 
+=======
+
+	unsigned oldsize;
+	oldsize = _fecGroup.size();
+	cout << "_fecGroup size = " << oldsize << endl;
+
+	// Second-time grouping.....................................................
+	// .....
+	int count = 0;
+	while ( count != 500 ) {
+		for ( int i = 0; i < c.getisize(); i++ ) {
+			unsigned pow = 1;
+			pattern[i] = 0;
+			for ( int j = 0; j < 32; j++ ) {
+				pattern[i] += ( rand() % 2 ) * pow;
+				if ( j != 31 ) pow *= 2;
+			}
+		}
+		vector<vector<int> > newfecgroup;	// new list of fec groups
+		vector<vector<int> > temp;	// new list of fec groups
+		bool same_answer;
+		// for each group
+		for ( int i = 0; i < _fecGroup.size(); i++ ) {
+			temp.clear();
+			// generate simulation answer for each id
+			for ( int j = 0; j < _fecGroup[i].size(); j++ ) {
+				size_t k = _fecGroup[i][j] - 1;
+				simu[k] = c.simulate( pattern, _faultGateId[k], _faultTypeList[k] );
+			}
+			// re-grouping
+			for ( int j = 0; j < _fecGroup[i].size(); j++ ) {
+				same_answer = false;
+				for ( int k = 0; k < temp.size(); k++ ) {
+					vector<int>* f = &(temp[k]);
+					if ( simu[ (*f)[0] - 1 ] == simu[ _fecGroup[i][j] - 1 ] ) {
+						same_answer = true;
+						f->push_back( _fecGroup[i][j] );
+						break;
+					}
+				}
+				if ( same_answer == false ) {
+					vector<int> newvector;
+					newvector.push_back( _fecGroup[i][j] );
+					temp.push_back( newvector );
+				}
+			}
+			for ( int k = 0; k < temp.size(); k++ ) {
+				if ( temp[k].size() > 1 ) {
+					newfecgroup.push_back( temp[k] );
+				}
+			}
+		}
+		if ( oldsize == newfecgroup.size() ) count++;
+		else {
+			cout << "_fecGroup size = " << newfecgroup.size() << endl;
+			count = 0;
+		}
+		_fecGroup = newfecgroup;
+		oldsize = _fecGroup.size();
+	}
+
+	delete [] pattern;
+	delete [] simu;
+	return &_fecGroup;
+}
+
+>>>>>>> 09e04158801e5d25177748f947bd0da0f959d8e1
 void printinBinary( unsigned long int n ) {
 	unsigned p = 1 << 31;
 	for ( int i = 0; i < 32; i++ ) {
