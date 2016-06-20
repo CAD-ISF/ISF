@@ -27,8 +27,8 @@ ABC_NAMESPACE_IMPL_START
 
 // external methods
 // main methods
-int Eda_InsertFaultNode( int, char *, Abc_Obj_t * );
-int Eda_ReplaceWithFaultNode( int, char *, Abc_Obj_t * );
+int Eda_InsertFaultNode( char *, Abc_Obj_t * );
+int Eda_ReplaceWithFaultNode( char *, Abc_Obj_t * );
 // private helpers
 
 ////////////////////////////////////////////////////////////////////////

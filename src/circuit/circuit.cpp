@@ -166,7 +166,6 @@ void Circuit::checkId(int id) {
 
 	cout << "\nFanin: ";
 	size_t s = _gateLists[id]->getFanin()->size();
-<<<<<<< HEAD
 	for (size_t i = 0; i < s; i++) {
 		cout << (*(_gateLists[id]->getFanin()))[i]->getId() << ' ';
 	}

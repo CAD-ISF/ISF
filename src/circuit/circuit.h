@@ -38,8 +38,8 @@ class Circuit {
 	int* getPO();
 	int getosize();
 	int getisize();
-	void topodfs(int);
-	vector<int>* gettopo();
+	void topoDfs(int);
+	vector<int>* getTopo();
 	unsigned simulate(unsigned*, int, FaultType);
 
 	void outputDFS(int id, map<int, bool>& out);

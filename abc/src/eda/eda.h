@@ -47,8 +47,8 @@ ABC_NAMESPACE_HEADER_START
 /*=== edaHello.c ==========================================================*/
 extern void Eda_SayHello( int );
 /*=== edaCreateFaultNode.c ================================================*/
-extern int Eda_InsertFaultNode( int, char *, Abc_Obj_t * );
-extern int Eda_ReplaceWithFaultNode( int, char *, Abc_Obj_t * );
+extern int Eda_InsertFaultNode( char *, Abc_Obj_t * );
+extern int Eda_ReplaceWithFaultNode( char *, Abc_Obj_t * );
 
 
 
