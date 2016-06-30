@@ -7,6 +7,7 @@
 #include <malloc/malloc.h>
 #include "ifs.h"
 #include <circuit/circuit.h>
+//#include <circuit.h>
  
 using namespace std;
 

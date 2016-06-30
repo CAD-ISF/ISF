@@ -1,8 +1,11 @@
 #include <iostream>
 #include <IFS/ifs.h>
+//#include <ifs.h>
 #include <IFS/myHash.h>
+//#include <myHash.h>
 #include <stdlib.h>
 #include <circuit/circuit.h>
+//#include <circuit.h>
 
 using namespace std;
 
@@ -18,13 +21,14 @@ extern void   Abc_Stop();
 
 // procedures to get the ABC framework and execute commands in it
 extern void *	   Abc_FrameGetGlobalFrame();
-extern void		   Abc_NtkDelete( Abc_Ntk_t * pNtk );
-extern Abc_Ntk_t * Abc_FrameReadNtk( void * p );
-extern void		   Abc_FrameSetCurrentNetwork( void * p, Abc_Ntk_t * pNtkNew );
+extern void	*	   Abc_NtkDup( void * pNtk );
+extern void		   Abc_NtkDelete( void * pNtk );
+extern void *	   Abc_FrameReadNtk( void * p );
+extern void		   Abc_FrameSetCurrentNetwork( void * p, void * pNtkNew );
 extern void		   Abc_FrameSwapCurrentAndBackup( void * p );
-extern void		   Abc_FrameReplaceCurrentNetwork( void * p, Abc_Ntk_t * pNtk );
+extern void		   Abc_FrameReplaceCurrentNetwork( void * p, void * pNtk );
 extern void		   Abc_FrameDeleteAllNetworks( void * p );
-extern int		   Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose );
+extern int		   Abc_NtkCecFraig( void * pNtk1, void * pNtk2, int nSeconds, int fVerbose );
 extern int		   Cmd_CommandExecute( void * pAbc, char * sCommand );
 
 ////////////////////////////////////////////////////////////////////////
@@ -66,8 +70,8 @@ int main(int argc, const char** argv) {
     //int fPrintStats = 1;
     //int fVerify     = 1;
     // variables
-    void * pAbc;
-    char * pFileName;
+    void * pAbc, * pNtk;
+    const char * pFileName;
     char Command[1000];
     //clock_t clkRead, clkResyn, clkVer, clk;
 	int cntconflict = 0;
@@ -85,7 +89,7 @@ int main(int argc, const char** argv) {
     // start the ABC framework
     Abc_Start();
 	pAbc = Abc_FrameGetGlobalFrame();
-
+	cout << "abc start\n";
 	//////////////////////////////////////////////////////////////////
 	// read the file
 	sprintf( Command, "read %s", pFileName );
@@ -98,7 +102,7 @@ int main(int argc, const char** argv) {
 	vector<vector<int> > newfecgroup;
 	for ( size_t i = 0; i < ifs.getFecGroup()->size(); i++ ) {
 		vector<int> &fecgroup = (*ifs.getFecGroup())[i];
-		map< int, Abc_Ntk_t * > fNtk;
+		map< int, void * > fNtk;
 
 		for ( size_t j = 0; j < fecgroup.size(); j++ ) {
 
@@ -154,7 +158,7 @@ int main(int argc, const char** argv) {
 			}
 		}
 
-		for ( map< int, Abc_Ntk_t * >::iterator it = fNtk.begin(); it != fNtk.end(); it++ ) {
+		for ( map< int, void * >::iterator it = fNtk.begin(); it != fNtk.end(); it++ ) {
 			Abc_NtkDelete( it->second );
 		}
 	}
@@ -162,14 +166,14 @@ int main(int argc, const char** argv) {
 	Abc_Stop();
 
 	vector<vector<int> > &fecgroup = (*(ifs.getFecGroup()));
-	fecgroup.clean();
+	fecgroup.clear();
 	for ( int i = 0; i < newfecgroup.size(); i++) {
 		if ( newfecgroup[i].size() > 1 ) {
 			for ( int j = 0; j < newfecgroup[i].size() - 1 ; j++ ) {
 				for ( int k = j + 1; k < newfecgroup[i].size(); k++ ) {
 					fecgroup.push_back(vector<int>());
-					fecgroup.back().push_back(newfecgroup[j]);
-					fecgroup.back().push_back(newfecgroup[k]);
+					fecgroup.back().push_back(newfecgroup[i][j]);
+					fecgroup.back().push_back(newfecgroup[i][k]);
 				}
 			}
 		}

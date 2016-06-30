@@ -50,7 +50,7 @@ Eda_Init( Abc_Frame_t * pAbc )
 {
    Cmd_CommandAdd( pAbc , "z EDA" , "hello" , EdaCommandHello , 0 );
    Cmd_CommandAdd( pAbc , "z EDA" , "inject_fault" , EdaCommandInjectFault , 0 );
-   Cmd_CommandAdd( pAbc , "z EDA" , "cec" , EdaCommandCec , 0 );
+   Cmd_CommandAdd( pAbc , "z EDA" , "eda_cec" , EdaCommandCec , 0 );
 }
 
 void 
