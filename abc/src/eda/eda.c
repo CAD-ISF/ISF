@@ -25,8 +25,9 @@ ABC_NAMESPACE_IMPL_START
 ///                        DECLARATIONS                              ///
 ////////////////////////////////////////////////////////////////////////
 
-static int EdaCommandHello              ( Abc_Frame_t * pAbc, int argc, char **argv );
-static int EdaCommandInjectFault        ( Abc_Frame_t * pAbc, int argc, char **argv );
+static int EdaCommandHello              ( Abc_Frame_t * pAbc, int argc, char ** argv );
+static int EdaCommandInjectFault        ( Abc_Frame_t * pAbc, int argc, char ** argv );
+static int EdaCommandCec		        ( Abc_Frame_t * pAbc, int argc, char ** argv );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -49,6 +50,7 @@ Eda_Init( Abc_Frame_t * pAbc )
 {
    Cmd_CommandAdd( pAbc , "z EDA" , "hello" , EdaCommandHello , 0 );
    Cmd_CommandAdd( pAbc , "z EDA" , "inject_fault" , EdaCommandInjectFault , 0 );
+   Cmd_CommandAdd( pAbc , "z EDA" , "cec" , EdaCommandCec , 0 );
 }
 
 void 
@@ -204,6 +206,170 @@ usage:
     fprintf( pAbc->Err, "\t-h     : prints the command usage\n" );
     return 1;
 }
+
+int 
+EdaCommandCec( Abc_Frame_t * pAbc, int argc, char ** argv )
+{
+    char Buffer[16];
+    Abc_Ntk_t * pNtk, * pNtk1, * pNtk2;
+    int fDelete1, fDelete2;
+    char ** pArgvNew;
+    int nArgcNew;
+    int c;
+    int fSat;
+    int fVerbose;
+    int nSeconds;
+    int nPartSize;
+    int nConfLimit;
+    int nInsLimit;
+    int fPartition;
+    int fIgnoreNames;
+
+    extern void Abc_NtkCecSat( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nConfLimit, int nInsLimit );
+    extern int Eda_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose );
+    extern void Abc_NtkCecFraigPart( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int nPartSize, int fVerbose );
+    extern void Abc_NtkCecFraigPartAuto( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose );
+
+    pNtk = Abc_FrameReadNtk(pAbc);
+    // set defaults
+    fSat     =  0;
+    fVerbose =  0;
+    nSeconds = 20;
+    nPartSize  = 0;
+    nConfLimit = 10000;
+    nInsLimit  = 0;
+    fPartition = 0;
+    fIgnoreNames = 0;
+    Extra_UtilGetoptReset();
+    while ( ( c = Extra_UtilGetopt( argc, argv, "TCIPpsnvh" ) ) != EOF )
+    {
+        switch ( c )
+        {
+        case 'T':
+            if ( globalUtilOptind >= argc )
+            {
+                Abc_Print( -1, "Command line switch \"-T\" should be followed by an integer.\n" );
+                goto usage;
+            }
+            nSeconds = atoi(argv[globalUtilOptind]);
+            globalUtilOptind++;
+            if ( nSeconds < 0 )
+                goto usage;
+            break;
+        case 'C':
+            if ( globalUtilOptind >= argc )
+            {
+                Abc_Print( -1, "Command line switch \"-C\" should be followed by an integer.\n" );
+                goto usage;
+            }
+            nConfLimit = atoi(argv[globalUtilOptind]);
+            globalUtilOptind++;
+            if ( nConfLimit < 0 )
+                goto usage;
+            break;
+        case 'I':
+            if ( globalUtilOptind >= argc )
+            {
+                Abc_Print( -1, "Command line switch \"-I\" should be followed by an integer.\n" );
+                goto usage;
+            }
+            nInsLimit = atoi(argv[globalUtilOptind]);
+            globalUtilOptind++;
+            if ( nInsLimit < 0 )
+                goto usage;
+            break;
+        case 'P':
+            if ( globalUtilOptind >= argc )
+            {
+                Abc_Print( -1, "Command line switch \"-P\" should be followed by an integer.\n" );
+                goto usage;
+            }
+            nPartSize = atoi(argv[globalUtilOptind]);
+            globalUtilOptind++;
+            if ( nPartSize < 0 )
+                goto usage;
+            break;
+        case 'p':
+            fPartition ^= 1;
+            break;
+        case 's':
+            fSat ^= 1;
+            break;
+        case 'n':
+            fIgnoreNames ^= 1;
+            break;
+        case 'v':
+            fVerbose ^= 1;
+            break;
+        default:
+            goto usage;
+        }
+    }
+
+    if ( pNtk && pNtk->vPhases != NULL )
+    {
+        Abc_Print( -1, "Cannot compare networks with phases defined.\n" );
+        return 1;
+    }
+
+    pArgvNew = argv + globalUtilOptind;
+    nArgcNew = argc - globalUtilOptind;
+    if ( !Abc_NtkPrepareTwoNtks( stdout, pNtk, pArgvNew, nArgcNew, &pNtk1, &pNtk2, &fDelete1, &fDelete2 ) )
+        return 1;
+
+    if ( fIgnoreNames )
+    {
+        if ( !fDelete1 )
+        {
+            pNtk1 = Abc_NtkStrash( pNtk1, 0, 1, 0 );
+            fDelete1 = 1;
+        }
+        if ( !fDelete2 )
+        {
+            pNtk2 = Abc_NtkStrash( pNtk2, 0, 1, 0 );
+            fDelete2 = 1;
+        }
+        Abc_NtkShortNames( pNtk1 );
+        Abc_NtkShortNames( pNtk2 );
+    }
+
+    // perform equivalence checking
+    if ( fPartition )
+        Abc_NtkCecFraigPartAuto( pNtk1, pNtk2, nSeconds, fVerbose );
+    else if ( nPartSize )
+        Abc_NtkCecFraigPart( pNtk1, pNtk2, nSeconds, nPartSize, fVerbose );
+    else if ( fSat )
+        Abc_NtkCecSat( pNtk1, pNtk2, nConfLimit, nInsLimit );
+    else
+        Eda_NtkCecFraig( pNtk1, pNtk2, nSeconds, fVerbose );
+
+    if ( fDelete1 ) Abc_NtkDelete( pNtk1 );
+    if ( fDelete2 ) Abc_NtkDelete( pNtk2 );
+    return 0;
+
+usage:
+    if ( nPartSize == 0 )
+        strcpy( Buffer, "unused" );
+    else
+        sprintf(Buffer, "%d", nPartSize );
+    Abc_Print( -2, "usage: cec [-T num] [-C num] [-I num] [-P num] [-psnvh] <file1> <file2>\n" );
+    Abc_Print( -2, "\t         performs combinational equivalence checking\n" );
+    Abc_Print( -2, "\t-T num : approximate runtime limit in seconds [default = %d]\n", nSeconds );
+    Abc_Print( -2, "\t-C num : limit on the number of conflicts [default = %d]\n",    nConfLimit );
+    Abc_Print( -2, "\t-I num : limit on the number of clause inspections [default = %d]\n", nInsLimit );
+    Abc_Print( -2, "\t-P num : partition size for multi-output networks [default = %s]\n", Buffer );
+    Abc_Print( -2, "\t-p     : toggle automatic partitioning [default = %s]\n", fPartition? "yes": "no" );
+    Abc_Print( -2, "\t-s     : toggle \"SAT only\" and \"FRAIG + SAT\" [default = %s]\n", fSat? "SAT only": "FRAIG + SAT" );
+    Abc_Print( -2, "\t-n     : toggle how CIs/COs are matched (by name or by order) [default = %s]\n", fIgnoreNames? "by order": "by name" );
+    Abc_Print( -2, "\t-v     : toggle verbose output [default = %s]\n", fVerbose? "yes": "no" );
+    Abc_Print( -2, "\t-h     : print the command usage\n");
+    Abc_Print( -2, "\tfile1  : (optional) the file with the first network\n");
+    Abc_Print( -2, "\tfile2  : (optional) the file with the second network\n");
+    Abc_Print( -2, "\t         if no files are given, uses the current network and its spec\n");
+    Abc_Print( -2, "\t         if one file is given, uses the current network and the file\n");
+    return 1;
+}
+
 ////////////////////////////////////////////////////////////////////////
 ///                       END OF FILE                                ///
 ////////////////////////////////////////////////////////////////////////

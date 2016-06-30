@@ -49,6 +49,7 @@ extern void Eda_SayHello( int );
 /*=== edaCreateFaultNode.c ================================================*/
 extern int Eda_InsertFaultNode( char *, Abc_Obj_t * );
 extern int Eda_ReplaceWithFaultNode( char *, Abc_Obj_t * );
+extern int Eda_NtkCecFraig( Abc_Ntk_t *, Abc_Ntk_t *, int, int );
 
 
 
