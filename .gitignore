@@ -4,3 +4,4 @@ bin
 *.d
 tags
 abc/abc
+abc/libabc.a
