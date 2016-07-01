@@ -50,28 +50,18 @@ int Eda_ReplaceWithFaultNode( char *, Abc_Obj_t * );
 int
 Eda_InsertFaultNode( char * faultType, Abc_Obj_t * pNode)
 {
-    Abc_Obj_t * pNodeConst, * pNodeInsert1, *pNodeInsert2, * pNodeFanin;
-    int i;
+    Abc_Obj_t * pNodeConst, * pNodeInsert;
 
     // set pNodeInsert1,2
-    pNodeInsert1 = Abc_NtkCreateObj( pNode->pNtk, ABC_OBJ_NODE );
-    pNodeInsert2 = Abc_NtkCreateObj( pNode->pNtk, ABC_OBJ_NODE );
-    if ( Abc_ObjIsPi(pNode) )
-    {
-       Abc_ObjTransferFanout( pNode, pNodeInsert2 );
-       Abc_ObjAddFanin( pNodeInsert2, pNode );
-    }
-    else
-    {
-        Abc_ObjForEachFanin( pNode, pNodeFanin, i )
-            Abc_ObjAddFanin( pNodeInsert1, pNodeFanin );
-        Abc_ObjSetData( pNodeInsert1, pNode->pData );
-        // delete fanins of pNode and add pNodeInsert to it's fanin
-        Abc_ObjRemoveFanins( pNode );
-        Abc_ObjAddFanin( pNodeInsert2, pNodeInsert1 );
-    }
+    if ( Abc_ObjIsPo(pNode) )
+        pNode = Abc_ObjFanin0( pNode );
+    else if ( Abc_ObjIsPi(pNode) )
+        pNode = Abc_ObjFanout0( pNode );
     
-    /*printf( "YY\n" );*/
+    pNodeInsert = Abc_NtkCreateObj( pNode->pNtk, ABC_OBJ_NODE );
+    Abc_ObjTransferFanout( pNode, pNodeInsert );
+    Abc_ObjAddFanin( pNodeInsert, pNode );
+
     if ( strcmp(faultType, "SA0") == 0 )
     {
         // create a const0 node
@@ -79,13 +69,8 @@ Eda_InsertFaultNode( char * faultType, Abc_Obj_t * pNode)
         Abc_ObjSetData( pNodeConst, Abc_SopCreateConst0((Mem_Flex_t *)pNodeConst->pNtk->pManFunc) );
         // add the const0 to the fanin of pNodeInsert
         // assign pNodeInsert as And gate
-        Abc_ObjAddFanin( pNodeInsert2, pNodeConst );
-        Abc_ObjSetData( pNodeInsert2, Abc_SopCreateAnd((Mem_Flex_t *)pNodeInsert2->pNtk->pManFunc, 2, NULL) );
-        if ( !Abc_ObjIsPi(pNode) )
-        {
-            Abc_ObjAddFanin( pNode, pNodeInsert2 );
-            Abc_ObjSetData( pNode, Abc_SopCreateBuf((Mem_Flex_t *)pNode->pNtk->pManFunc) );
-        }
+        Abc_ObjAddFanin( pNodeInsert, pNodeConst );
+        Abc_ObjSetData( pNodeInsert, Abc_SopCreateAnd((Mem_Flex_t *)pNodeInsert->pNtk->pManFunc, 2, NULL) );
     }
     else if ( strcmp(faultType, "SA1") == 0 )
     {
@@ -94,24 +79,13 @@ Eda_InsertFaultNode( char * faultType, Abc_Obj_t * pNode)
         Abc_ObjSetData( pNodeConst, Abc_SopCreateConst1((Mem_Flex_t *)pNodeConst->pNtk->pManFunc) );
         // add the const1 to the fanin of pNodeInsert
         // assign pNodeInsert as OR gate
-        Abc_ObjAddFanin( pNodeInsert2, pNodeConst );
-        Abc_ObjSetData( pNodeInsert2, Abc_SopCreateOr((Mem_Flex_t *)pNodeInsert2->pNtk->pManFunc, 2, NULL) );
-        if ( !Abc_ObjIsPi(pNode) )
-        {
-            Abc_ObjAddFanin( pNode, pNodeInsert2 );
-            Abc_ObjSetData( pNode, Abc_SopCreateBuf((Mem_Flex_t *)pNode->pNtk->pManFunc) );
-        }
+        Abc_ObjAddFanin( pNodeInsert, pNodeConst );
+        Abc_ObjSetData( pNodeInsert, Abc_SopCreateOr((Mem_Flex_t *)pNodeInsert->pNtk->pManFunc, 2, NULL) );
     }
     else if ( strcmp(faultType, "NEG") == 0 )
     {
         // assign pNodeInsert as an inverter
-        /*Abc_ObjSetData( pNodeInsert, Abc_SopCreateInv((Mem_Flex_t *)pNodeInsert->pNtk->pManFunc) );*/
-        Abc_ObjSetData( pNodeInsert2, Abc_SopCreateInv((Mem_Flex_t *)pNodeInsert2->pNtk->pManFunc) );
-        if ( !Abc_ObjIsPi(pNode) )
-        {
-            Abc_ObjAddFanin( pNode, pNodeInsert2 );
-            Abc_ObjSetData( pNode, Abc_SopCreateBuf((Mem_Flex_t *)pNode->pNtk->pManFunc) );
-        }
+        Abc_ObjSetData( pNodeInsert, Abc_SopCreateInv((Mem_Flex_t *)pNodeInsert->pNtk->pManFunc) );
     }
     // invalid fault type
     else return 0;
