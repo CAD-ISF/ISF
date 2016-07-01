@@ -232,6 +232,7 @@ EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )
     extern int Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose );
     extern int Abc_NtkDarSec( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, Fra_Sec_t * p );
     
+        fNtk = Abc_FrameReadNtk( pAbc );
     Abc_FrameDeleteAllNetworks( pAbc );
     Fra_SecSetDefaultParams( pSecPar );
     pSecPar->TimeLimit = 0;
@@ -252,8 +253,8 @@ EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )
         }
     }
     
-    /*if ( argc < 7 )*/
-        /*goto usage;*/
+    if ( argc < 7 )
+        goto usage;
     if ( (argc - 5) % 2 != 0 )
         goto usage;
     
@@ -270,10 +271,8 @@ EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )
     faultNum = ( argc - 3 ) / 2;
     pNtk = Abc_FrameReadNtk( pAbc );
     vNtk = Vec_PtrStart( faultNum );
-    
     Vec_PtrForEachEntry( Abc_Ntk_t *, vNtk, fNtk, i )
     {
-        optind += 2 * i;
         sprintf( Command, "inject_fault %s %s", argv[optind], argv[optind + 1] );
         if ( Cmd_CommandExecute( pAbc, Command ) )
         {
@@ -284,6 +283,7 @@ EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )
         dfNtk = Abc_NtkDup( fNtk );
         Vec_PtrWriteEntry( vNtk, i, dfNtk );
         Abc_FrameSwapCurrentAndBackup( pAbc );
+        optind += 2;
     }
 
     Vec_PtrForEachEntry( Abc_Ntk_t *, vNtk, fNtk, i )
