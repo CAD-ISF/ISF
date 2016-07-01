@@ -1,8 +1,9 @@
 #ifndef CIRCUIT_H_
 #define CIRCUIT_H_
 
-#include<map>
-#include<gate/gate.h>
+#include <map>
+#include <util.h>
+#include <gate/gate.h>
 //#include <IFS/ifs.h>
 
 using namespace std;

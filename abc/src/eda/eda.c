@@ -241,6 +241,7 @@ EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )
     {
         switch ( c )
         {
+			printf("%d\n", c);
             case 'c':
                 break;
             case 's':
