@@ -47,7 +47,7 @@ static int EdaCommandIfs                ( Abc_Frame_t * pAbc, int argc, char ** 
 
  ***********************************************************************/
 
-    void 
+void 
 Eda_Init( Abc_Frame_t * pAbc )
 {
     Cmd_CommandAdd( pAbc , "z EDA" , "hello" , EdaCommandHello , 0 );
@@ -56,7 +56,7 @@ Eda_Init( Abc_Frame_t * pAbc )
     Cmd_CommandAdd( pAbc , "z EDA" , "ifs" , EdaCommandIfs , 0 );
 }
 
-    void 
+void 
 Eda_End()
 {
 }
@@ -316,7 +316,6 @@ usage:
     return 1;
 
 }
-
 
 int 
 EdaCommandCec( Abc_Frame_t * pAbc, int argc, char ** argv )
