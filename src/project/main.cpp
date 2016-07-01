@@ -69,7 +69,7 @@ int main(int argc, const char** argv) {
 
 	int fseq = 0, cntseq = 0;
 	char Command[100000];
-	const char * scriptFileName = "fecgroup.txt", * cmdFileName = "cmd.txt";
+	const char * scriptFileName = "../tmp/fecgroup.txt", * cmdFileName = "../tmp/cmd.txt";
 	string line;
 	ifstream cirF( argv[1] );
 
@@ -102,6 +102,7 @@ int main(int argc, const char** argv) {
 			sprintf( Command, " n%d %s", fId, line.c_str() );
 			cmdF << Command;
 		}
+		//sprintf( Command, "\" | tee %s", scriptFileName );
 		sprintf( Command, "\" > %s", scriptFileName );
 		cmdF << Command;
 
@@ -109,9 +110,9 @@ int main(int argc, const char** argv) {
 		ifstream icmdF( cmdFileName );
 		getline( icmdF, line );
 		icmdF.close();
-		cout << line << '\n';
+		//cout << line << '\n';
 		//sprintf( line, "echo yes" );
-		//system( line );
+		system( line.c_str() );
 /*
 		size_t fcount = 1, fcnt, checked;
 		bool need = true;
