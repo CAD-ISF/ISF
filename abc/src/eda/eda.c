@@ -18,8 +18,8 @@
 
 #include "eda.h"
 #include "base/main/mainInt.h"
-#include <iostream>
-#include <fstream>
+/*#include <iostream>*/
+/*#include <fstream>*/
 
 
 ABC_NAMESPACE_IMPL_START
@@ -210,47 +210,47 @@ usage:
     return 1;
 }
 
-int 
-EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )
-{
-	// argv[0] : .bench
-	// argv[2n+1] : fault_gate_id
-	// argv[2n+2] : fault_type
-	int optpos = 1, argpos; // optind : option index, argpos : argument position ( = optind + 1 )
-	char Command[1000];
+/*int */
+/*EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )*/
+/*{*/
+	/*// argv[0] : .bench*/
+	/*// argv[2n+1] : fault_gate_id*/
+	/*// argv[2n+2] : fault_type*/
+	/*int optpos = 1, argpos; // optind : option index, argpos : argument position ( = optind + 1 )*/
+	/*char Command[1000];*/
 
-	Abc_FrameDeleteAllNetworks( pAbc );
+	/*Abc_FrameDeleteAllNetworks( pAbc );*/
 
-	// clear all networks in frame
-	sprintf( Command, "read %s", argv[optind] );
-	if ( Cmd_CommandExecute( pAbc, Command ) )
-	{
-		fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
-		return 1;
-	}
-	optpos += 1;
-	argpos = optpos + 1;
+	/*// clear all networks in frame*/
+	/*sprintf( Command, "read %s", argv[optind] );*/
+	/*if ( Cmd_CommandExecute( pAbc, Command ) )*/
+	/*{*/
+		/*fprintf( stdout, "Cannot execute command \"%s\".\n", Command );*/
+		/*return 1;*/
+	/*}*/
+	/*optpos += 1;*/
+	/*argpos = optpos + 1;*/
 
-	// create array for pointing fault networks
-	Abc_Ntk_t ** vNtk = malloc( sizeof( Abc_Ntk_t * ) );
+	/*// create array for pointing fault networks*/
+	/*Abc_Ntk_t ** vNtk = malloc( sizeof( Abc_Ntk_t * ) );*/
 
-	// if still fault unread
-	while ( argpos < argc )
-	{
-		// inject fault
-		sprintf( Command, "inject_fault %s %s", argv[optind], argv[argpos] );
-		if ( Cmd_CommandExecute( pAbc, Command ) )
-		{
-			fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
-			return 1;
-		}
-		// vNtk[i] = Abc_FrameReadNtk( pAbc )
-	}
+	/*// if still fault unread*/
+	/*while ( argpos < argc )*/
+	/*{*/
+		/*// inject fault*/
+		/*sprintf( Command, "inject_fault %s %s", argv[optind], argv[argpos] );*/
+		/*if ( Cmd_CommandExecute( pAbc, Command ) )*/
+		/*{*/
+			/*fprintf( stdout, "Cannot execute command \"%s\".\n", Command );*/
+			/*return 1;*/
+		/*}*/
+		/*// vNtk[i] = Abc_FrameReadNtk( pAbc )*/
+	/*}*/
 
-	// cec vNtk[0] vNtk[i]
+	/*// cec vNtk[0] vNtk[i]*/
 
-	return 0;
-}
+	/*return 0;*/
+/*}*/
 		
 
 int 
