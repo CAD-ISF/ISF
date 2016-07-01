@@ -9,17 +9,15 @@
   Synopsis    [Command file.]
 
   Author      [Cheng Han Lin]
-  
+
   Affiliation [NTU]
 
   Date        [June 19 , 2016.]
 
-***********************************************************************/
+ ***********************************************************************/
 
 #include "eda.h"
 #include "base/main/mainInt.h"
-#include <iostream>
-#include <fstream>
 
 
 ABC_NAMESPACE_IMPL_START
@@ -30,7 +28,8 @@ ABC_NAMESPACE_IMPL_START
 
 static int EdaCommandHello              ( Abc_Frame_t * pAbc, int argc, char ** argv );
 static int EdaCommandInjectFault        ( Abc_Frame_t * pAbc, int argc, char ** argv );
-static int EdaCommandCec		        ( Abc_Frame_t * pAbc, int argc, char ** argv );
+static int EdaCommandCec		            ( Abc_Frame_t * pAbc, int argc, char ** argv );
+static int EdaCommandIfs                ( Abc_Frame_t * pAbc, int argc, char ** argv );
 
 ////////////////////////////////////////////////////////////////////////
 ///                     FUNCTION DEFINITIONS                         ///
@@ -41,22 +40,23 @@ static int EdaCommandCec		        ( Abc_Frame_t * pAbc, int argc, char ** argv )
   Synopsis    [Start / Stop the eda package]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
 
-***********************************************************************/
+ ***********************************************************************/
 
-void 
+    void 
 Eda_Init( Abc_Frame_t * pAbc )
 {
-   Cmd_CommandAdd( pAbc , "z EDA" , "hello" , EdaCommandHello , 0 );
-   Cmd_CommandAdd( pAbc , "z EDA" , "inject_fault" , EdaCommandInjectFault , 0 );
-   Cmd_CommandAdd( pAbc , "z EDA" , "eda_cec" , EdaCommandCec , 0 );
+    Cmd_CommandAdd( pAbc , "z EDA" , "hello" , EdaCommandHello , 0 );
+    Cmd_CommandAdd( pAbc , "z EDA" , "inject_fault" , EdaCommandInjectFault , 0 );
+    Cmd_CommandAdd( pAbc , "z EDA" , "eda_cec" , EdaCommandCec , 0 );
+    Cmd_CommandAdd( pAbc , "z EDA" , "ifs" , EdaCommandIfs , 0 );
 }
 
-void 
+    void 
 Eda_End()
 {
 }
@@ -66,12 +66,12 @@ Eda_End()
   Synopsis    []
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
 
-***********************************************************************/
+ ***********************************************************************/
 
 int 
 EdaCommandHello( Abc_Frame_t * pAbc , int argc , char ** argv )
@@ -82,16 +82,16 @@ EdaCommandHello( Abc_Frame_t * pAbc , int argc , char ** argv )
     Extra_UtilGetoptReset();
     while ( ( c = Extra_UtilGetopt( argc, argv, "vh" ) ) != EOF )
     {
-       switch ( c )
-       {
-          case 'v':
-             fVerbose ^= 1;
-             break;
-          case 'h':
-             goto usage;
-          default:
-             goto usage;
-       }
+        switch ( c )
+        {
+            case 'v':
+                fVerbose ^= 1;
+                break;
+            case 'h':
+                goto usage;
+            default:
+                goto usage;
+        }
     }
 
     Eda_SayHello( fVerbose );
@@ -110,12 +110,12 @@ usage:
   Synopsis    [Inject Fault.]
 
   Description []
-               
+
   SideEffects []
 
   SeeAlso     []
 
-***********************************************************************/
+ ***********************************************************************/
 
 int 
 EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
@@ -133,18 +133,18 @@ EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
     Extra_UtilGetoptReset();
     while ( ( c = Extra_UtilGetopt( argc, argv, "h" ) ) != EOF )
     {
-       switch ( c )
-       {
-          /*case 'v':*/
-             /*fVerbose ^= 1;*/
-             /*break;*/
-          case 'h':
-             goto usage;
-          default:
-             goto usage;
-       }
+        switch ( c )
+        {
+            /*case 'v':*/
+            /*fVerbose ^= 1;*/
+            /*break;*/
+            case 'h':
+                goto usage;
+            default:
+                goto usage;
+        }
     }
-
+    
     if ( argc != globalUtilOptind + 2 )
         goto usage;
 
@@ -162,11 +162,11 @@ EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
 
     pName = argv[globalUtilOptind];
     faultType = argv[globalUtilOptind + 1];
-    
+
     pNtkRes = Abc_NtkDup( pNtk );
-    id = Nm_ManFindIdByName( pNtkRes->pManName, pName + 1, -1);
+    id = Nm_ManFindIdByName( pNtk->pManName, pName + 1, -1);
     pNodeOld = Abc_NtkObj( pNtkRes, id );
-    
+
     // pNodeFault = Abc_NtkCreateNode( pNtk, ABC_OBJ_NODE );
     // SA0, SA1, NEG
     if ( strncmp( faultType, "RDOB", 4 ) != 0 ) 
@@ -192,7 +192,7 @@ EdaCommandInjectFault( Abc_Frame_t * pAbc , int argc , char ** argv )
         Abc_Print( -1, "The fanin of node should not be Pi\n");
         goto usage;
     }
-    
+
     // set the setted network to be the current network
     // implicitly backup the origin network
     Abc_FrameSetCurrentNetwork( pAbc, pNtkRes );
@@ -213,45 +213,110 @@ usage:
 int 
 EdaCommandIfs( Abc_Frame_t *pAbc, int argc, char ** argv )
 {
-	// argv[0] : .bench
-	// argv[2n+1] : fault_gate_id
-	// argv[2n+2] : fault_type
-	int optpos = 1, argpos; // optind : option index, argpos : argument position ( = optind + 1 )
-	char Command[1000];
+    // argv[0] : .bench
+    // argv[2n+2] : fault_gate_id
+    // argv[2n+3] : fault_type
+    // if still fault unread
+    char Command[100];
+    Abc_Ntk_t * pNtk, * fNtk, * cfNtk, * dfNtk;
+    Vec_Ptr_t * vNtk;
+    Fra_Sec_t SecPar, * pSecPar = &SecPar;
+    int optind;
+    int faultNum;
+    int cec = 1;
+    int i, j;
+    int fVerbose = 0;
+    int nSeconds = 20;
+    int c;
 
-	Abc_FrameDeleteAllNetworks( pAbc );
+    extern int Abc_NtkCecFraig( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, int nSeconds, int fVerbose );
+    extern int Abc_NtkDarSec( Abc_Ntk_t * pNtk1, Abc_Ntk_t * pNtk2, Fra_Sec_t * p );
+    
+    Abc_FrameDeleteAllNetworks( pAbc );
+    Fra_SecSetDefaultParams( pSecPar );
+    pSecPar->TimeLimit = 0;
 
-	// clear all networks in frame
-	sprintf( Command, "read %s", argv[optind] );
-	if ( Cmd_CommandExecute( pAbc, Command ) )
-	{
-		fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
-		return 1;
-	}
-	optpos += 1;
-	argpos = optpos + 1;
+    while ( ( c = Extra_UtilGetopt( argc, argv, "csh" ) ) != EOF )
+    {
+        switch ( c )
+        {
+            case 'c':
+                break;
+            case 's':
+                cec = 0;
+                break;
+            case 'h':
+                goto usage;
+            default:
+                goto usage;
+        }
+    }
+    
+    /*if ( argc < 7 )*/
+        /*goto usage;*/
+    if ( (argc - 5) % 2 != 0 )
+        goto usage;
+    
+    // read bench file
+    optind = globalUtilOptind;
+    sprintf( Command, "read %s", argv[optind++] );
+    if ( Cmd_CommandExecute( pAbc, Command ) )
+    {
+        fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
+        goto usage;
+    }
 
-	// create array for pointing fault networks
-	Abc_Ntk_t ** vNtk = malloc( sizeof( Abc_Ntk_t * ) );
+    // inject fault
+    faultNum = ( argc - 3 ) / 2;
+    pNtk = Abc_FrameReadNtk( pAbc );
+    vNtk = Vec_PtrStart( faultNum );
+    
+    Vec_PtrForEachEntry( Abc_Ntk_t *, vNtk, fNtk, i )
+    {
+        optind += 2 * i;
+        sprintf( Command, "inject_fault %s %s", argv[optind], argv[optind + 1] );
+        if ( Cmd_CommandExecute( pAbc, Command ) )
+        {
+            fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
+            goto usage;
+        }
+        fNtk = Abc_FrameReadNtk( pAbc );
+        dfNtk = Abc_NtkDup( fNtk );
+        Vec_PtrWriteEntry( vNtk, i, dfNtk );
+        Abc_FrameSwapCurrentAndBackup( pAbc );
+    }
 
-	// if still fault unread
-	while ( argpos < argc )
-	{
-		// inject fault
-		sprintf( Command, "inject_fault %s %s", argv[optind], argv[argpos] );
-		if ( Cmd_CommandExecute( pAbc, Command ) )
-		{
-			fprintf( stdout, "Cannot execute command \"%s\".\n", Command );
-			return 1;
-		}
-		// vNtk[i] = Abc_FrameReadNtk( pAbc )
-	}
+    Vec_PtrForEachEntry( Abc_Ntk_t *, vNtk, fNtk, i )
+    {
+        Vec_PtrForEachEntry( Abc_Ntk_t *, vNtk, cfNtk, j )
+        {
+            if ( j > i )
+            {
+                // if the circuit is CEC
+                if ( cec )
+                    Abc_NtkCecFraig( fNtk, cfNtk, nSeconds, fVerbose );
+                // if the circuit is SEC
+                else
+                    Abc_NtkDarSec( fNtk, cfNtk, pSecPar );
+            }
+            else
+                continue;
+        }
+    }
+    return 0;
 
-	// cec vNtk[0] vNtk[i]
+usage:
+    fprintf( pAbc->Err, "usage: ifs [-cs] <fileName> <node_id> <fault_type> .... <node_id> <fault_type>\n" );
+    fprintf( pAbc->Err, "\t     check the identical faults in a fault group\n" );
+    fprintf( pAbc->Err, "\t     the circuit is defined by the given bench file\n" );
+    fprintf( pAbc->Err, "\t     the arguments after fileName are the node id and fault type of each given fault\n" );
+    fprintf( pAbc->Err, "\t     -c\t    :for CEC \n" );
+    fprintf( pAbc->Err, "\t     -s\t    :for SEC \n" );
 
-	return 0;
+    return 1;
+
 }
-		
+
 
 int 
 EdaCommandCec( Abc_Frame_t * pAbc, int argc, char ** argv )
@@ -291,64 +356,64 @@ EdaCommandCec( Abc_Frame_t * pAbc, int argc, char ** argv )
     {
         switch ( c )
         {
-        case 'T':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line switch \"-T\" should be followed by an integer.\n" );
+            case 'T':
+                if ( globalUtilOptind >= argc )
+                {
+                    Abc_Print( -1, "Command line switch \"-T\" should be followed by an integer.\n" );
+                    goto usage;
+                }
+                nSeconds = atoi(argv[globalUtilOptind]);
+                globalUtilOptind++;
+                if ( nSeconds < 0 )
+                    goto usage;
+                break;
+            case 'C':
+                if ( globalUtilOptind >= argc )
+                {
+                    Abc_Print( -1, "Command line switch \"-C\" should be followed by an integer.\n" );
+                    goto usage;
+                }
+                nConfLimit = atoi(argv[globalUtilOptind]);
+                globalUtilOptind++;
+                if ( nConfLimit < 0 )
+                    goto usage;
+                break;
+            case 'I':
+                if ( globalUtilOptind >= argc )
+                {
+                    Abc_Print( -1, "Command line switch \"-I\" should be followed by an integer.\n" );
+                    goto usage;
+                }
+                nInsLimit = atoi(argv[globalUtilOptind]);
+                globalUtilOptind++;
+                if ( nInsLimit < 0 )
+                    goto usage;
+                break;
+            case 'P':
+                if ( globalUtilOptind >= argc )
+                {
+                    Abc_Print( -1, "Command line switch \"-P\" should be followed by an integer.\n" );
+                    goto usage;
+                }
+                nPartSize = atoi(argv[globalUtilOptind]);
+                globalUtilOptind++;
+                if ( nPartSize < 0 )
+                    goto usage;
+                break;
+            case 'p':
+                fPartition ^= 1;
+                break;
+            case 's':
+                fSat ^= 1;
+                break;
+            case 'n':
+                fIgnoreNames ^= 1;
+                break;
+            case 'v':
+                fVerbose ^= 1;
+                break;
+            default:
                 goto usage;
-            }
-            nSeconds = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            if ( nSeconds < 0 )
-                goto usage;
-            break;
-        case 'C':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line switch \"-C\" should be followed by an integer.\n" );
-                goto usage;
-            }
-            nConfLimit = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            if ( nConfLimit < 0 )
-                goto usage;
-            break;
-        case 'I':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line switch \"-I\" should be followed by an integer.\n" );
-                goto usage;
-            }
-            nInsLimit = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            if ( nInsLimit < 0 )
-                goto usage;
-            break;
-        case 'P':
-            if ( globalUtilOptind >= argc )
-            {
-                Abc_Print( -1, "Command line switch \"-P\" should be followed by an integer.\n" );
-                goto usage;
-            }
-            nPartSize = atoi(argv[globalUtilOptind]);
-            globalUtilOptind++;
-            if ( nPartSize < 0 )
-                goto usage;
-            break;
-        case 'p':
-            fPartition ^= 1;
-            break;
-        case 's':
-            fSat ^= 1;
-            break;
-        case 'n':
-            fIgnoreNames ^= 1;
-            break;
-        case 'v':
-            fVerbose ^= 1;
-            break;
-        default:
-            goto usage;
         }
     }
 

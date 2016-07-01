@@ -118,7 +118,6 @@ Eda_ReplaceWithFaultNode( char * faultType, Abc_Obj_t * pNodeOld )
     }
     else if ( Abc_ObjFaninNum(pNodeFault) == 2)
     {
-        printf("%s\n", faultType);
         if ( strcmp(faultType, "RDOB_AND") == 0 )
         {
             Abc_ObjSetData( pNodeFault, Abc_SopCreateAnd((Mem_Flex_t *)pNodeFault->pNtk->pManFunc, 2, NULL) );
